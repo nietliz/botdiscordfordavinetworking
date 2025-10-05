@@ -2,6 +2,7 @@ const { Client, Events, GatewayIntentBits, Collection } = require('discord.js');
 const dotenv = require('dotenv');
 dotenv.config();
 const {TOKEN, CLIENT_ID, GUILD_ID} = process.env;
+const {sendDirectMessage} = require('./actions/sendDM.js');
 
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -27,6 +28,7 @@ for (const file of commandFiles) {
 
 client.once(Events.ClientReady, readyClient => {
 	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+	sendDirectMessage(client, "nietliz", "oiiii");
 });
 
 client.login(TOKEN);
@@ -46,3 +48,5 @@ client.on(Events.InteractionCreate, async interaction => {
 		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 	}
 });
+
+module.exports = { client };

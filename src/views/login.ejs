@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 520px; margin: 40px auto; padding: 0 16px; }
+        form { display: flex; flex-direction: column; gap: 12px; }
+        input { padding: 10px 12px; font-size: 16px; }
+        button { padding: 12px; font-size: 16px; cursor: pointer; }
+        .error { color: #b00020; margin-bottom: 12px; }
+        @media (max-width: 480px) {
+            body { margin: 24px auto; }
+            h2 { font-size: 20px; }
+            input, button { font-size: 15px; }
+        }
+    </style>
+
+    </head>
+<body>
+    <h2>Área Restrita</h2>
+    <% if (error) { %>
+        <div class="error"><%= error %></div>
+    <% } %>
+    <form method="post" action="/login">
+        <input type="hidden" name="apiKey" value="<%- encrypt(apiKey) %>">
+        <input name="username" placeholder="Usuário" required>
+        <input name="password" placeholder="Senha" type="password" required>
+        <button type="submit">Entrar</button>
+    </form>
+</body>
+</html>

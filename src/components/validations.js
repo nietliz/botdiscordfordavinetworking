@@ -14,7 +14,7 @@ function registerUserValidation(user) {
         return [false, "Existem Campos Vazios"];
     }
 
-    console.log(user.name.split(""));
+    // console.log(user.name.split(""));
 
     //name
     if (user.name.split("").length < 3) {

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Usuário</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .topbar h2 { margin: 0; font-size: 22px; }
+        .card { border: 1px solid #ddd; border-radius: 6px; padding: 16px; background: #fff; }
+        .row { display: flex; gap: 16px; flex-wrap: wrap; }
+        .col { flex: 1 1 260px; }
+        .label { color: #666; font-size: 13px; }
+        .value { font-size: 16px; }
+        ul { padding-left: 18px; }
+        @media (max-width: 600px) {
+            .topbar { flex-direction: column; align-items: stretch; }
+            .topbar h2 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h2>Detalhes do Usuário</h2>
+        <div>
+            <a href="/users">Voltar</a>
+        </div>
+    </div>
+    <div class="card">
+        <div class="row">
+            <div class="col">
+                <div class="label">ID</div>
+                <div class="value"><%= id %></div>
+            </div>
+            <div class="col">
+                <div class="label">dc_username</div>
+                <div class="value"><%= (user && user.dc_username) ? user.dc_username : '(não informado)' %></div>
+            </div>
+        </div>
+        <div style="margin-top:16px;">
+            <div class="label">Redes sociais</div>
+            <% if (user && user.social_networks) { %>
+                <% const sn = user.social_networks; %>
+                <ul>
+                    <% for (var k in sn) { if (sn.hasOwnProperty(k)) { %>
+                        <li><strong><%= k %>:</strong> <%= sn[k] %></li>
+                    <% } } %>
+                </ul>
+            <% } else { %>
+                <div class="value">(não informado)</div>
+            <% } %>
+        </div>
+        <div style="margin-top:16px;">
+            <div class="label">Outros dados</div>
+            <ul>
+                <% for (var key in user) { if (user.hasOwnProperty(key) && ['_id','dc_username','social_networks'].indexOf(key) === -1) { %>
+                    <li>
+                        <strong><%= key %>:</strong>
+                        <% if (typeof user[key] === 'string' || typeof user[key] === 'number' || typeof user[key] === 'boolean') { %>
+                            <%= user[key] %>
+                        <% } else { %>
+                            <em>(conteúdo estruturado)</em>
+                        <% } %>
+                    </li>
+                <% } } %>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

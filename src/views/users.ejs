@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuários</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #f7f7f7; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .topbar h2 { margin: 0; font-size: 22px; }
+        @media (max-width: 600px) {
+            .topbar { flex-direction: column; align-items: stretch; }
+            .topbar h2 { font-size: 20px; }
+            table { font-size: 14px; }
+            th, td { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h2>Lista de Usuários</h2>
+        <form method="post" action="/logout">
+            <button type="submit">Sair</button>
+        </form>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>dc_username</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (users && users.length) { %>
+                <% users.forEach(u => { %>
+                    <tr>
+                        <td><%= u.id %></td>
+                        <td><%= u.dc_username %></td>
+                        <td><a href="/users/<%= u.id %>">Ver detalhes</a></td>
+                    </tr>
+                <% }) %>
+            <% } else { %>
+                <tr>
+                    <td colspan="3">Nenhum usuário encontrado.</td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+</body>
+</html>

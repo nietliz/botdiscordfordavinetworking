@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificação em Duas Etapas</title>
+    <style>
+        :root { --fg: #111; --muted: #6b7280; --bg: #ffffff; --line: #e5e7eb; --accent: #111; }
+        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; color: var(--fg); background: var(--bg); max-width: 560px; margin: 48px auto; padding: 0 20px; }
+        h2 { font-weight: 600; letter-spacing: -.02em; margin: 0 0 16px; }
+        p.hint { color: var(--muted); margin: 0 0 16px; }
+        .card { border: 1px solid var(--line); border-radius: 12px; padding: 16px; background: #fff; }
+        form { display: flex; gap: 10px; }
+        .stack { display: flex; flex-direction: column; gap: 14px; }
+        input { flex: 1; padding: 12px 14px; font-size: 16px; border: 1px solid var(--line); border-radius: 10px; outline: none; text-align: center; letter-spacing: 4px; }
+        input:focus { border-color: #cfd3d9; }
+        .btn { appearance: none; border: 1px solid var(--line); background: #111; color: #fff; padding: 12px 16px; font-size: 15px; border-radius: 10px; cursor: pointer; transition: transform .02s ease, opacity .15s ease; }
+        .btn.secondary { background: #f7f7f7; color: #111; }
+        .btn:active { transform: translateY(1px); }
+        .error { color: #b00020; margin-bottom: 12px; }
+        .ok { color: #0b7e3a; margin-bottom: 12px; }
+        .row { display: flex; gap: 10px; align-items: center; }
+        .actions { display: flex; gap: 8px; justify-content: flex-start; }
+        @media (max-width: 520px) {
+            body { margin: 28px auto; padding: 0 16px; }
+            form { flex-direction: column; }
+            input { letter-spacing: 3px; }
+            .row, .actions { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+    <h2>Confirmação de Acesso</h2>
+    <div class="card stack">
+        <% if (error) { %>
+            <div class="error"><%= error %></div>
+        <% } %>
+        <% if (message) { %>
+            <div class="ok"><%= message %></div>
+        <% } %>
+
+        <div class="row">
+            <form id="verifyForm" method="post" action="/auth/verify" style="flex:1;">
+                <input type="hidden" name="subject" value="<%= subject %>">
+                <input type="hidden" name="apiKey" value="<%- encrypt(apiKey) %>">
+                <input name="token" maxlength="6" minlength="6" placeholder="Digite o código" required>
+            </form>
+
+            <form method="post" action="/auth/send">
+                <input type="hidden" name="subject" value="<%= subject %>">
+                <input type="hidden" name="apiKey" value="<%- encrypt(apiKey) %>">
+                <button class="btn" type="submit">Enviar código por DM</button>
+            </form>
+        </div>
+
+        <div class="actions">
+            <form method="post" action="/logout">
+                <button class="btn secondary" type="submit">Sair</button>
+            </form>
+            <button class="btn" type="submit" form="verifyForm">Entrar</button>
+        </div>
+    </div>
+</body>
+</html>
+
+
