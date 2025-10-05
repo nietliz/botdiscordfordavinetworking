@@ -8,8 +8,6 @@ const ALLOWED_ORIGINS = [
     // Adicione outros domínios permitidos aqui
 ];
 
-const API_KEY = process.env.FRONTEND_API_KEY;
-const { decrypt } = require('./crypt');
 
 /**
  * Middleware para verificar se a requisição vem do seu frontend
@@ -19,30 +17,16 @@ const { decrypt } = require('./crypt');
  */
 function verifyFrontendAccess(req, res, next) {
     const origin = req.get('Origin') || req.get('Referer');
-    const encryptedApiKey = req.get('X-API-Key') || req.body?.apiKey;
     
     // Verifica se a origem está na lista permitida
     const isAllowedOrigin = ALLOWED_ORIGINS.some(allowed => 
         origin && origin.startsWith(allowed)
     );
     
-    // Descriptografa e verifica se a API key está correta
-    let hasValidApiKey = false;
-    if (encryptedApiKey) {
-        try {
-            const decryptedApiKey = decrypt(encryptedApiKey);
-            hasValidApiKey = decryptedApiKey === API_KEY;
-        } catch (error) {
-            console.log('Erro ao descriptografar API key:', error.message);
-            hasValidApiKey = false;
-        }
-    }
-    
     // Permite acesso se:
     // 1. A origem está na lista permitida OU
-    // 2. Tem a API key correta (descriptografada) OU
-    // 3. É uma requisição GET para páginas (não API)
-    if (isAllowedOrigin || hasValidApiKey || (req.method === 'GET' && !req.path.startsWith('/api'))) {
+    // 2. É uma requisição GET para páginas (não API)
+    if (isAllowedOrigin || (req.method === 'GET' && !req.path.startsWith('/api'))) {
         return next();
     }
     

@@ -42,13 +42,11 @@
         <div class="row">
             <form id="verifyForm" method="post" action="/auth/verify" style="flex:1;">
                 <input type="hidden" name="subject" value="<%= subject %>">
-                <input type="hidden" name="apiKey" value="<%- encrypt(apiKey) %>">
                 <input name="token" maxlength="6" minlength="6" placeholder="Digite o código" required>
             </form>
 
             <form method="post" action="/auth/send">
                 <input type="hidden" name="subject" value="<%= subject %>">
-                <input type="hidden" name="apiKey" value="<%- encrypt(apiKey) %>">
                 <button class="btn" type="submit">Enviar código por DM</button>
             </form>
         </div>

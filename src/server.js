@@ -1,3 +1,6 @@
+// Carrega variáveis de ambiente
+require('dotenv').config();
+
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
@@ -6,7 +9,6 @@ const { connectDB } = require('./connectiondb');
 const { client } = require('./index');
 const { requestTwoFactor, verifyTwoFactor } = require('./actions/auth');
 const { verifyFrontendAccess } = require('./actions/verifyaccess');
-const { encrypt, decrypt } = require('./actions/crypt');
 
 const app = express();
 
@@ -14,8 +16,6 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Disponibiliza funções para as views EJS
-app.locals.encrypt = encrypt;
 
 // Parsers
 app.use(express.urlencoded({ extended: false }));
@@ -49,8 +49,7 @@ function ensureAuthenticated(req, res, next) {
 // Rotas públicas
 app.get('/login', (req, res) => {
 	const error = req.query.error || '';
-	const apiKey = process.env.FRONTEND_API_KEY || '';
-	res.render('login', { error, apiKey });
+	res.render('login', { error });
 });
 
 app.post('/login', async (req, res) => {
@@ -76,28 +75,25 @@ app.get('/auth', ensureAuthenticated, (req, res) => {
 	const error = req.query.error || '';
 	const message = req.query.message || '';
 	const subject = req.session.twofactorSubject || process.env.TWOFA_SUBJECT || 'nietliz';
-	const apiKey = process.env.FRONTEND_API_KEY || '';
-	return res.render('auth', { error, message, subject, apiKey });
+	return res.render('auth', { error, message, subject });
 });
 
 app.post('/auth/send', ensureAuthenticated, async (req, res) => {
 	const subject = (req.body && req.body.subject) || req.session.twofactorSubject || 'nietliz';
-	const apiKey = process.env.FRONTEND_API_KEY || '';
 	const result = await requestTwoFactor(client, subject);
 	if (!result.ok) {
-		return res.status(500).render('auth', { error: 'Falha ao enviar o código por DM.', message: '', subject, apiKey });
+		return res.status(500).render('auth', { error: 'Falha ao enviar o código por DM.', message: '', subject });
 	}
-	return res.render('auth', { error: '', message: 'Código enviado por DM.', subject, apiKey });
+	return res.render('auth', { error: '', message: 'Código enviado por DM.', subject });
 });
 
 app.post('/auth/verify', ensureAuthenticated, async (req, res) => {
 	const subject = (req.body && req.body.subject) || req.session.twofactorSubject || 'nietliz';
 	const token = (req.body && req.body.token) || '';
-	const apiKey = process.env.FRONTEND_API_KEY || '';
 	const result = await verifyTwoFactor(subject, token);
 	if (!result.ok) {
 		const reason = result.reason === 'expired' ? 'Código expirado.' : 'Código inválido.';
-		return res.status(401).render('auth', { error: reason, message: '', subject, apiKey });
+		return res.status(401).render('auth', { error: reason, message: '', subject });
 	}
 	req.session.twofactorVerified = true;
 	return res.redirect('/users');
