@@ -2,10 +2,10 @@
 // Bloqueia Postman, curl, cmd e outros serviços externos
 
 const ALLOWED_ORIGINS = [
-    'http://localhost:3000',           // desenvolvimento local
-    'https://seudominio.com',          // seu domínio de produção
-    'https://www.seudominio.com',      // www do seu domínio
-    // Adicione outros domínios permitidos aqui
+    'http://72.60.3.77:3000',           
+    'https://72.60.3.77:3000',         
+    'http://srv1047569.hstgr.cloud:3000',      
+    'https://srv1047569.hstgr.cloud:3000',      
 ];
 
 
