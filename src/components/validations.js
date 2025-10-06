@@ -42,7 +42,7 @@ function editUserValidation(changes) {
         // console.log(key);
         const element = changes[key];
         const regex = /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
-        if (!regex.test(element)) {
+        if (!regex.test(element) && key !="ok") {
             
             return [false, "Por Favor corrija o campo " + key]
 

@@ -114,7 +114,8 @@ app.get('/users', ensureAuthenticated, ensureTwoFactorVerified, async (req, res)
 			.toArray();
 
 		const users = docs.map(d => ({ id: d._id.toString(), dc_username: d.dc_username || '(sem nome)' }));
-		return res.render('users', { users });
+		const message = req.query.message || '';
+		return res.render('users', { users, message });
 	} catch (err) {
 		return res.status(500).send('Erro ao carregar usuários.');
 	}
@@ -132,6 +133,32 @@ app.get('/users/:id', ensureAuthenticated, ensureTwoFactorVerified, async (req, 
 		return res.render('user_details', { user, userJson, id });
 	} catch (err) {
 		return res.status(400).send('ID inválido ou erro ao buscar usuário.');
+	}
+});
+
+app.post('/users/:id/delete', ensureAuthenticated, ensureTwoFactorVerified, async (req, res) => {
+	try {
+		const { id } = req.params;
+		const db = await connectDB();
+		
+		// Verifica se o usuário existe
+		const user = await db.collection('teste2').findOne({ _id: new ObjectId(id) });
+		if (!user) {
+			return res.status(404).send('Usuário não encontrado');
+		}
+		
+		// Exclui o usuário do banco
+		const result = await db.collection('teste2').deleteOne({ _id: new ObjectId(id) });
+		
+		if (result.deletedCount === 1) {
+			console.log(`✅ Usuário ${id} excluído com sucesso`);
+			return res.redirect('/users?message=Usuário excluído com sucesso');
+		} else {
+			return res.status(500).send('Erro ao excluir usuário');
+		}
+	} catch (err) {
+		console.error('Erro ao excluir usuário:', err);
+		return res.status(400).send('ID inválido ou erro ao excluir usuário.');
 	}
 });
 

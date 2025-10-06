@@ -17,7 +17,7 @@ async function AddUser(user) {
         if (valided) {
             const cluster = await connectDB();
             cluster.collection(collection_name).insertOne(user);
-            return {status:true,message:`**✅ Parabéns! Seu cadastro foi realizado com sucesso.**`};
+            return {status:true,message:`**✅ Primeiro passo feito com sucesso.**\n _⚠ para finalizar sua inscrição, complete seu cadastro com o comando /passo-final._`};
         } else {
             return {status:true,message:`**❌ Erro: ${status}**`};
         }
@@ -34,7 +34,7 @@ async function EditUser(filter,changes) {
         if (valided) {
             const cluster = await connectDB();
             cluster.collection(collection_name).updateOne(filter,{$set:{social_networks:changes}}); //depois preciso trocar de teste para users
-            return {status:true,message:`**✅ Parabéns! Suas redes foram atualizadas com sucesso.**`};
+            return {status:true,message:`**✅ Parabéns! Sua inscrição foi finalizada com sucesso 💸.**`};
         } else {
             console.log("estamos aqui?")
             return {status:true,message:`**❌ Erro: ${status}**`};
@@ -48,11 +48,29 @@ async function VerifyExist(userid){
     const cluster = await connectDB();
     const user= await cluster.collection(collection_name).findOne({dc_username:userid}); //depois preciso trocar de teste para users
     if((user != "") && (user != null) && (user != {})){
-        return true;
+        console.log("aquiiiasdasdasdi:",user)
+        return 1;
     }else{
-        return false;
+        console.log('deu B.O')
+        return 0;
     }
     
 }
 
-module.exports = { Verific, AddUser, EditUser,VerifyExist }
+async function VerifyExistTwo(userid){
+    const cluster = await connectDB();
+    const user= await cluster.collection(collection_name).findOne({dc_username:userid}); //depois preciso trocar de teste para users
+    if((user != "") && (user != null) && (user != {})){
+        if(user.social_networks.ok){
+            return 1;
+        }else{
+            return 0;
+        }
+        
+    }else{
+        return 0;
+    }
+    
+}
+
+module.exports = { Verific, AddUser, EditUser,VerifyExist, VerifyExistTwo }

@@ -8,6 +8,11 @@
         body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
         .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
         .topbar h2 { margin: 0; font-size: 22px; }
+        .actions { display: flex; gap: 12px; align-items: center; }
+        .btn { padding: 8px 16px; text-decoration: none; border-radius: 4px; font-size: 14px; }
+        .btn-secondary { background: #f7f7f7; color: #333; border: 1px solid #ddd; }
+        .btn-danger { background: #dc3545; color: white; border: 1px solid #dc3545; }
+        .btn-danger:hover { background: #c82333; }
         .card { border: 1px solid #ddd; border-radius: 6px; padding: 16px; background: #fff; }
         .row { display: flex; gap: 16px; flex-wrap: wrap; }
         .col { flex: 1 1 260px; }
@@ -23,8 +28,11 @@
 <body>
     <div class="topbar">
         <h2>Detalhes do Usuário</h2>
-        <div>
-            <a href="/users">Voltar</a>
+        <div class="actions">
+            <a href="/users" class="btn btn-secondary">Voltar</a>
+            <form method="post" action="/users/<%= id %>/delete" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')">
+                <button type="submit" class="btn btn-danger">Excluir Usuário</button>
+            </form>
         </div>
     </div>
     <div class="card">

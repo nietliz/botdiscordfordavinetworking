@@ -3,49 +3,51 @@ const { Verific, AddUser, Validation, EditUser, VerifyExist } = require("./../co
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("new-partner")
-        .setDescription("Abri formulario de inscrição"),
+        .setName("inscricao-parte-1")
+        .setDescription("Iniciar Inscrição - Primeiro passo"),
     async execute(interaction) {
-        if(VerifyExist(interaction.user.username)){
+        const ex= await VerifyExist(interaction.user.username);
+        if ( ex === 1) {
+            console.log('aooopppp')
             await interaction.reply(`**✅ Você já foi cadastrado com sucesso.** \n_Para mudar consulte um administrador._`)
-            return;
-        }
+            return 0;
+        } else {
+            const [modal, keys] = await createPopupOne(interaction); //criando o popup modal com discord.js
 
-        const [modal, keys] = await createPopupOne(interaction); //criando o popup modal com discord.js
+            //mostrando na tela
+            await interaction.showModal(modal);
+            //esperando a interação do usuario para prosseguir
+            const filter = (interaction) => interaction.customId === keys.user;
+            interaction.awaitModalSubmit({ filter, time: 30_000 }).then((modalInteraction) => {
+                const cpf = modalInteraction.fields.getTextInputValue(keys.input.cpf)
+                const cpfLimpo = cpf.replace(/[^\d]/g, "");
+                const phone = modalInteraction.fields.getTextInputValue(keys.input.phone)
+                const phoneLimpo = phone.replace(/[^\d]/g, "");
+                AddUser(
+                    {
+                        name: modalInteraction.fields.getTextInputValue(keys.input.name),
+                        cpf: cpfLimpo,
+                        phone: phoneLimpo,
+                        pixkey: modalInteraction.fields.getTextInputValue(keys.input.pixkey),
+                        userID: interaction.user.id,
+                        social_networks: "",
+                        dc_username: interaction.user.username
+                    },
 
-        //mostrando na tela
-        await interaction.showModal(modal);
-        //esperando a interação do usuario para prosseguir
-        const filter = (interaction) => interaction.customId === keys.user;
-        interaction.awaitModalSubmit({ filter, time: 30_000 }).then((modalInteraction) => {
-            const cpf= modalInteraction.fields.getTextInputValue(keys.input.cpf)
-            const cpfLimpo = cpf.replace(/[^\d]/g, "");
-            const phone= modalInteraction.fields.getTextInputValue(keys.input.phone)
-            const phoneLimpo = phone.replace(/[^\d]/g, "");  
-            AddUser(
-                {
-                    name: modalInteraction.fields.getTextInputValue(keys.input.name),
-                    cpf: cpfLimpo,
-                    phone: phoneLimpo,
-                    pixkey: modalInteraction.fields.getTextInputValue(keys.input.pixkey),
-                    userID: interaction.user.id,
-                    social_networks: "",
-                    dc_username: interaction.user.username
-                },
-
-            ).then(r => {
-                if((r.status != "") && (r.status != null) && (r.status != undefined)){
-                    if((r.message != "") && (r.message != null) && (r.message != undefined)){
-                        console.log(r.message)
-                        modalInteraction.reply(r.message);
+                ).then(r => {
+                    if ((r.status != "") && (r.status != null) && (r.status != undefined)) {
+                        if ((r.message != "") && (r.message != null) && (r.message != undefined)) {
+                            console.log(r.message)
+                            modalInteraction.reply(r.message);
+                        }
                     }
-                }
+                })
+
+                //abrir outra modal aqui e repetir o processo.
+            }).catch((err) => {
+                console.log(err);
             })
-            
-            //abrir outra modal aqui e repetir o processo.
-        }).catch((err) => {
-            console.log(err);
-        })
+        }
 
     }
 }
