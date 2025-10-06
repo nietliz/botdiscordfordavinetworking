@@ -28,7 +28,7 @@ for (const file of commandFiles) {
 
 client.once(Events.ClientReady, readyClient => {
 	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
-	sendDirectMessage(client, "nietliz", "oiiii");
+	sendDirectMessage(client, "nietliz", "oiiii, vc ta baum?");
 });
 
 client.login(TOKEN);
