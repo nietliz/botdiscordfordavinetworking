@@ -17,7 +17,7 @@ async function AddUser(user) {
         if (valided) {
             const cluster = await connectDB();
             cluster.collection(collection_name).insertOne(user);
-            return {status:true,message:`**✅ Primeiro passo feito com sucesso.**\n _⚠ para finalizar sua inscrição, complete seu cadastro com o comando /passo-final._`};
+            return {status:true,message:`**✅ Primeiro passo feito com sucesso.**`};
         } else {
             return {status:true,message:`**❌ Erro: ${status}**`};
         }

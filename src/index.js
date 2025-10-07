@@ -37,14 +37,14 @@ client.once(Events.ClientReady, readyClient => {
 
 		if (x === 1) return;
 
-		const canal = client.channels.cache.get("1424835857868914688");
+		const canal = client.channels.cache.get("1424583293936078918");
 		if (!canal) {
 			console.log(canal)
-			console.error(`Erro: Canal com ID 1424835857868914688 não encontrado.`);
+			console.error(`Erro: Canal com ID 1424583293936078918 não encontrado.`);
 			return;
 		}
 
-		canal.send(`## BEM-VINDOS À COMPETIÇÃO! \n A jornada de **Marketing Digital** 📈 e **Crescimento Financeiro** começa agora. \nPara garantir sua **participação oficial** no torneio de **Cortes** (Redes Sociais) ✂️, é obrigatório realizar o cadastro de inscrição aqui no servidor. \n\nPor favor, siga as instruções e preencha seus **dados** e **redes sociais**. Não perca o prazo! A hora de começar a faturar 💰 é esta. Boa sorte a todos!\n`)
+		canal.send(`**Sistema de cadastro de clipadores**\n\nLeia com atenção e preencha corretamente, os 2 cadastros são **obrigatórios**\n\n1º Cadastro: Dados pessoais para pagamentos\n2º Cadastro: Dados das redes sociais, **preencher com o link do perfil**\n\n**Válido apenas um cadastro por conta de Discord, qualquer dúvida, abrir ticket**`)
 			.then((message) => {
 				console.log('Mensagem enviada com sucesso.')
 				AddMsg({ id_msg: message.id, content: message.content });
