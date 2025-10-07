@@ -1,7 +1,8 @@
 const { SlashCommandBuilder, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require("discord.js")
 const { Verific, AddUser, EditUser, Validation, VerifyExist, VerifyExistTwo } = require("./../components/users");
+const {sendDirectMessage} = require("./../actions/sendDM");
 
-async function manageUserRole(interaction, roleName, message_pass) {
+async function manageUserRole(interaction, roleName, message_pass,client) {
     const GUILD_ID = interaction.guildId;
     const USER_ID = interaction.user.id;
 
@@ -36,7 +37,8 @@ async function manageUserRole(interaction, roleName, message_pass) {
         // 3. Verificação de Posse
         if (member.roles.cache.has(role.id)) {
             // await interaction.reply({ content: `✅ Você já possui o cargo **${roleName}**.`, ephemeral: true });
-            await interaction.reply({ content: message_pass, ephemeral: true });
+            // await interaction.reply({ content: message_pass, ephemeral: true });
+            await sendDirectMessage(client,interaction.user.username,message_pass);
 
             return;
         }
@@ -45,7 +47,8 @@ async function manageUserRole(interaction, roleName, message_pass) {
         await member.roles.add(role);
 
         // 5. Resposta final
-        await interaction.reply({ content: message_pass, ephemeral: true });
+        await sendDirectMessage(client,interaction.user.username,message_pass);
+        //  interaction.reply({ content: , ephemeral: true });
 
     } catch (error) {
         console.error('Erro modular de gerenciamento de cargo:', error);
@@ -57,14 +60,23 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName("inscricao-parte-2")
         .setDescription("Terminar Inscrição - Ultimo Passo"),
-    async execute(interaction) {
-        const ex2 = await VerifyExistTwo(interaction.user.username)
-        const ex3 = await VerifyExist(interaction.user.username)
+    async execute(interaction,client,ex) {
+        const ex2 = ex.two
+        const ex3 = ex.three
+        
         if (ex2 === 1) {
-            manageUserRole(interaction, "clipador oficial", `**✅ Suas redes já estão cadastradas com sucesso.** \n_para mudar consulte um administrador._`)
+            await interaction.deferReply({ ephemeral: true });
+            manageUserRole(interaction, "clipador", `**✅ Suas redes já estão cadastradas com sucesso.** \n_para mudar consulte um administrador._`,client)
+            await interaction.deleteReply();
             return 0;
         } else if (ex3 === 0) {
-            await interaction.reply(`**❌ Você ainda não fez o passo 1. Por favor não pule etapas.**`)
+            // await interaction.reply();
+            console.log("veio ate aqui")
+            await interaction.deferReply({ ephemeral: true });
+            await sendDirectMessage(client,interaction.user.username,`**❌ Você ainda não fez o passo 1. Por favor não pule etapas.**`);
+            await interaction.deleteReply(); 
+          
+            
             return 0;
         } else {
 
@@ -87,18 +99,17 @@ module.exports = {
                 EditUser(
                     { dc_username: interaction.user.username },
                     {
-                        facebook: modalInteraction.fields.getTextInputValue(keys.input.facebook),
                         instagram: modalInteraction.fields.getTextInputValue(keys.input.instagram),
                         youtube: modalInteraction.fields.getTextInputValue(keys.input.youtube),
                         tiktok: modalInteraction.fields.getTextInputValue(keys.input.tiktok),
-                        kawai: modalInteraction.fields.getTextInputValue(keys.input.kawai),
                         ok: true,
                     }
                 ).then(r => {
                     if ((r.status != "") && (r.status != null) && (r.status != undefined)) {
                         if ((r.message != "") && (r.message != null) && (r.message != undefined)) {
-                            console.log(r.message)
-                            manageUserRole(modalInteraction, "clipador oficial", r.message)
+                            // console.log(r.message)
+                            manageUserRole(modalInteraction, "clipador", r.message,client)
+                            modalInteraction.deferUpdate();
                         }
                     }
                 })
@@ -112,11 +123,9 @@ async function createPopupOne(interaction) {
     const keys = {
         user: `ns-${interaction.user.id}`,
         input: {
-            facebook: "facebookInput",
             instagram: "instagramInput",
             youtube: "youtubeInput",
             tiktok: "tiktokInput",
-            kawai: "kawaiInput",
         }
     }
 
@@ -124,11 +133,6 @@ async function createPopupOne(interaction) {
     const modal = new ModalBuilder()
         .setCustomId(keys.user)
         .setTitle('Redes Sociais');
-
-    const facebook = new TextInputBuilder()
-        .setCustomId(keys.input.facebook)
-        .setLabel("Facebook:")
-        .setStyle(TextInputStyle.Short);
 
     const instagram = new TextInputBuilder()
         .setCustomId(keys.input.instagram)
@@ -145,18 +149,12 @@ async function createPopupOne(interaction) {
         .setLabel("Tiktok:")
         .setStyle(TextInputStyle.Short);
 
-    const kawai = new TextInputBuilder()
-        .setCustomId(keys.input.kawai)
-        .setLabel("Kawai:")
-        .setStyle(TextInputStyle.Short);
 
 
     modal.addComponents(
-        new ActionRowBuilder().addComponents(facebook),
         new ActionRowBuilder().addComponents(instagram),
         new ActionRowBuilder().addComponents(youtube),
         new ActionRowBuilder().addComponents(tiktok),
-        new ActionRowBuilder().addComponents(kawai)
     );
 
     return [modal, keys];

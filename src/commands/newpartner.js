@@ -1,19 +1,24 @@
 const { SlashCommandBuilder, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require("discord.js")
 const { Verific, AddUser, Validation, EditUser, VerifyExist } = require("./../components/users");
+const {sendDirectMessage} = require("./../actions/sendDM");
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("inscricao-parte-1")
         .setDescription("Iniciar Inscrição - Primeiro passo"),
-    async execute(interaction) {
-        const ex= await VerifyExist(interaction.user.username);
+    async execute(interaction,client,ex) {
+        
         if ( ex === 1) {
-            console.log('aooopppp')
-            await interaction.reply(`**✅ Você já foi cadastrado com sucesso.** \n_Para mudar consulte um administrador._`)
+            // console.log('aooopppp')
+            // interaction.reply()
+            // console.log("ssssssssssssss")
+            await interaction.deferReply({ ephemeral: true });
+            await sendDirectMessage(client,interaction.user.username,`**✅ Você já foi cadastrado com sucesso.** \n_Para mudar consulte um administrador._`);
+            await interaction.deleteReply();
             return 0;
         } else {
+            console.log("dsasd")
             const [modal, keys] = await createPopupOne(interaction); //criando o popup modal com discord.js
-
             //mostrando na tela
             await interaction.showModal(modal);
             //esperando a interação do usuario para prosseguir
@@ -38,7 +43,9 @@ module.exports = {
                     if ((r.status != "") && (r.status != null) && (r.status != undefined)) {
                         if ((r.message != "") && (r.message != null) && (r.message != undefined)) {
                             console.log(r.message)
-                            modalInteraction.reply(r.message);
+                            // modalInteraction.reply();
+                            sendDirectMessage(client,interaction.user.username,r.message);
+                            modalInteraction.deferUpdate(); 
                         }
                     }
                 })
@@ -76,7 +83,7 @@ async function createPopupOne(interaction) {
 
     const modal = new ModalBuilder()
         .setCustomId(keys.user)
-        .setTitle('Register Of Partner');
+        .setTitle('Cadastre Seus Dados');
 
     const nameInput = new TextInputBuilder()
         .setCustomId(keys.input.name)

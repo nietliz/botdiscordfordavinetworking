@@ -48,7 +48,7 @@ async function VerifyExist(userid){
     const cluster = await connectDB();
     const user= await cluster.collection(collection_name).findOne({dc_username:userid}); //depois preciso trocar de teste para users
     if((user != "") && (user != null) && (user != {})){
-        console.log("aquiiiasdasdasdi:",user)
+        // console.log("aquiiiasdasdasdi:",user)
         return 1;
     }else{
         console.log('deu B.O')
