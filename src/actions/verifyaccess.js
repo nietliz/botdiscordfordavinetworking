@@ -5,8 +5,7 @@ const ALLOWED_ORIGINS = [
     'http://72.60.3.77:3000',           
     'https://72.60.3.77:3000',         
     'http://srv1047569.hstgr.cloud:3000',      
-    'https://srv1047569.hstgr.cloud:3000',
-    'http://localhost:3000'  
+    'https://srv1047569.hstgr.cloud:3000',  
 ];
 
 
