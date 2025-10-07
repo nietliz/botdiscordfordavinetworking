@@ -3,7 +3,8 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { TOKEN, CLIENT_ID, GUILD_ID } = process.env;
 const { sendDirectMessage } = require('./actions/sendDM.js');
-const { VerifyExist, VerifyExistTwo} = require("./components/users");
+const { VerifyExist, VerifyExistTwo } = require("./components/users");
+const { AddMsg, VerifyMsg } = require("./components/messageSaverDb");
 
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -31,59 +32,70 @@ for (const file of commandFiles) {
 
 client.once(Events.ClientReady, readyClient => {
 	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
-	const canal = client.channels.cache.get("1424835857868914688");
-	if (!canal) {
-		console.log(canal)
-		console.error(`Erro: Canal com ID 1424835857868914688 não encontrado.`);
-		return;
-	}
+	VerifyMsg().then(x => {
+		console.log("olha SOI ISSSO!", x)
 
-	canal.send(`## BEM-VINDOS À COMPETIÇÃO! \n A jornada de **Marketing Digital** 📈 e **Crescimento Financeiro** começa agora. \nPara garantir sua **participação oficial** no torneio de **Cortes** (Redes Sociais) ✂️, é obrigatório realizar o cadastro de inscrição aqui no servidor. \n\nPor favor, siga as instruções e preencha seus **dados** e **redes sociais**. Não perca o prazo! A hora de começar a faturar 💰 é esta. Boa sorte a todos!\n`)
-		.then(() => console.log('Mensagem enviada com sucesso.'))
-		.catch(error => console.error('Erro ao enviar mensagem:', error));
+		if (x === 1) return;
 
-	const button = new ButtonBuilder()
-		.setCustomId('openmodal_button_1')
-		.setLabel('1° Cadastrar Dados')
-		.setStyle(ButtonStyle.Success);
+		const canal = client.channels.cache.get("1424835857868914688");
+		if (!canal) {
+			console.log(canal)
+			console.error(`Erro: Canal com ID 1424835857868914688 não encontrado.`);
+			return;
+		}
 
-	const button2 = new ButtonBuilder()
-		.setCustomId('openmodal_button_2')
-		.setLabel('2° Cadastrar Redes')
-		.setStyle(ButtonStyle.Success);
+		canal.send(`## BEM-VINDOS À COMPETIÇÃO! \n A jornada de **Marketing Digital** 📈 e **Crescimento Financeiro** começa agora. \nPara garantir sua **participação oficial** no torneio de **Cortes** (Redes Sociais) ✂️, é obrigatório realizar o cadastro de inscrição aqui no servidor. \n\nPor favor, siga as instruções e preencha seus **dados** e **redes sociais**. Não perca o prazo! A hora de começar a faturar 💰 é esta. Boa sorte a todos!\n`)
+			.then((message) => {
+				console.log('Mensagem enviada com sucesso.')
+				AddMsg({ id_msg: message.id, content: message.content });
+			})
+			.catch(error => console.error('Erro ao enviar mensagem:', error));
 
-	const row_message = new ActionRowBuilder().addComponents(button, button2)
-	// const row_message2 = new ActionRowBuilder().addComponents(button2)
+		const button = new ButtonBuilder()
+			.setCustomId('openmodal_button_1')
+			.setLabel('1° Cadastrar Dados')
+			.setStyle(ButtonStyle.Success);
 
-	const response = canal.send({ components: [row_message] })
-		.then((x) => {
-			console.log("enviou")
-		})
-		.catch(error => console.error('Erro ao enviar mensagem:', error));
+		const button2 = new ButtonBuilder()
+			.setCustomId('openmodal_button_2')
+			.setLabel('2° Cadastrar Redes')
+			.setStyle(ButtonStyle.Success);
 
-	
-	console.log(response);
+		const row_message = new ActionRowBuilder().addComponents(button, button2)
+		// const row_message2 = new ActionRowBuilder().addComponents(button2)
 
-	sendDirectMessage(client, "nietliz", "oiiii, vc ta baum?");
+		const response = canal.send({ components: [row_message] })
+			.then((x) => {
+				console.log("enviou")
+			})
+			.catch(error => console.error('Erro ao enviar mensagem:', error));
+
+
+		console.log(response);
+
+		// sendDirectMessage(client, "nietliz", "oiiii, vc ta baum?");
+	});
+
+
 });
 
 client.login(TOKEN);
 
 client.on(Events.InteractionCreate, async interaction => {
 	let cm = "inscricao-parte-1"
-	let ex="";
+	let ex = "";
 	if (interaction.customId == "openmodal_button_1" || interaction.customId == "openmodal_button_2") {
-		ex= await VerifyExist(interaction.user.username);
+		ex = await VerifyExist(interaction.user.username);
 		if (interaction.customId == "openmodal_button_2") {
 			cm = "inscricao-parte-2"
 			ex = {
-				two:await VerifyExistTwo(interaction.user.username),
-				three:await VerifyExist(interaction.user.username)
+				two: await VerifyExistTwo(interaction.user.username),
+				three: await VerifyExist(interaction.user.username)
 			}
 		}
 
 		const command = client.commands.get(cm);
-		command.execute(interaction, client,ex); //se for escalar, precisa mexer nisso. Ou colocar como parametro opcional em todos os comandos
+		command.execute(interaction, client, ex); //se for escalar, precisa mexer nisso. Ou colocar como parametro opcional em todos os comandos
 
 	}
 
