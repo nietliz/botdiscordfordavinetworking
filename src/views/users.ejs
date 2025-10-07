@@ -65,28 +65,82 @@
             </tr>
         </thead>
         <tbody>
-            <% if (typeof isSearch !== 'undefined' && isSearch && typeof searchResults !== 'undefined' && searchResults && searchResults.length > 0) { %>
-                <% searchResults.forEach(u => { %>
-                    <tr>
-                        <td><%= u.id %></td>
-                        <td><%= u.dc_username %></td>
-                        <td><a href="/users/<%= u.id %>">Ver detalhes</a></td>
-                    </tr>
-                <% }) %>
-            <% } else if (users && users.length) { %>
-                <% users.forEach(u => { %>
-                    <tr>
-                        <td><%= u.id %></td>
-                        <td><%= u.dc_username %></td>
-                        <td><a href="/users/<%= u.id %>">Ver detalhes</a></td>
-                    </tr>
-                <% }) %>
-            <% } else { %>
-                <tr>
-                    <td colspan="3">Nenhum usuário encontrado.</td>
-                </tr>
-            <% } %>
+            <tr id="no-users-row" style="display: none;">
+                <td colspan="3">Nenhum usuário encontrado.</td>
+            </tr>
         </tbody>
     </table>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+        <button id="prevBtn" style="padding: 6px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">anterior</button>
+        <button id="nextBtn" style="padding: 6px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">próximo</button>
+    </div>
+    <script id="users-data" type="application/json"><%- JSON.stringify((typeof isSearch !== 'undefined' && isSearch && typeof searchResults !== 'undefined' && searchResults) ? searchResults : (users || [])) %></script>
+    <script>
+        (function () {
+            const dataEl = document.getElementById('users-data');
+            const data = JSON.parse((dataEl && dataEl.textContent) ? dataEl.textContent : '[]');
+            const tbody = document.querySelector('tbody');
+            const noUsersRow = document.getElementById('no-users-row');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const pageSize = 10;
+            let currentPage = 0;
+
+            function renderPage(pageIndex) {
+                // Clear rows except the no-users placeholder
+                Array.from(tbody.querySelectorAll('tr')).forEach(tr => {
+                    if (tr !== noUsersRow) tr.remove();
+                });
+
+                const total = data.length;
+                const totalPages = Math.ceil(total / pageSize) || 1;
+
+                if (total === 0) {
+                    noUsersRow.style.display = '';
+                    prevBtn.style.display = 'none';
+                    nextBtn.style.display = 'none';
+                    return;
+                } else {
+                    noUsersRow.style.display = 'none';
+                }
+
+                const start = pageIndex * pageSize;
+                const end = Math.min(start + pageSize, total);
+                const slice = data.slice(start, end);
+
+                slice.forEach(u => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${u.id}</td>
+                        <td>${u.dc_username}</td>
+                        <td><a href="/users/${u.id}">Ver detalhes</a></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Toggle buttons visibility at bounds
+                prevBtn.style.display = pageIndex <= 0 ? 'none' : '';
+                nextBtn.style.display = pageIndex >= totalPages - 1 ? 'none' : '';
+            }
+
+            prevBtn.addEventListener('click', function () {
+                if (currentPage > 0) {
+                    currentPage -= 1;
+                    renderPage(currentPage);
+                }
+            });
+
+            nextBtn.addEventListener('click', function () {
+                const totalPages = Math.ceil(data.length / pageSize) || 1;
+                if (currentPage < totalPages - 1) {
+                    currentPage += 1;
+                    renderPage(currentPage);
+                }
+            });
+
+            // Initial render
+            renderPage(currentPage);
+        })();
+    </script>
 </body>
 </html>

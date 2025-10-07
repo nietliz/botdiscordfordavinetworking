@@ -61,7 +61,7 @@
         </div>
         <div style="margin-top:16px;">
             <div class="label">Outros dados</div>
-            <ul id="outrosDadosList">
+            <ul>
                 <% for (var key in user) { if (user.hasOwnProperty(key) && ['_id','dc_username','social_networks','ok'].indexOf(key) === -1) { %>
                     <li>
                         <strong><%= key %>:</strong>
@@ -73,52 +73,7 @@
                     </li>
                 <% } } %>
             </ul>
-            <div id="outrosDadosControls" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 8px;">
-                <button id="outrosPrev" class="btn btn-secondary" type="button">Anterior</button>
-                <button id="outrosNext" class="btn btn-secondary" type="button">Próximo</button>
-            </div>
         </div>
     </div>
 </body>
-<script>
-    (function () {
-        var list = document.getElementById('outrosDadosList');
-        if (!list) return;
-        var items = Array.prototype.slice.call(list.querySelectorAll('li'));
-        var prevBtn = document.getElementById('outrosPrev');
-        var nextBtn = document.getElementById('outrosNext');
-        var controls = document.getElementById('outrosDadosControls');
-        var pageSize = 10;
-        var currentPage = 0;
-        var totalPages = Math.ceil(items.length / pageSize) || 1;
-
-        function renderPage(page) {
-            var start = page * pageSize;
-            var end = start + pageSize;
-            for (var i = 0; i < items.length; i++) {
-                items[i].style.display = (i >= start && i < end) ? '' : 'none';
-            }
-            prevBtn.style.display = (page <= 0) ? 'none' : '';
-            nextBtn.style.display = (page >= totalPages - 1) ? 'none' : '';
-            controls.style.display = (items.length > pageSize) ? 'flex' : 'none';
-        }
-
-        if (prevBtn && nextBtn) {
-            prevBtn.addEventListener('click', function () {
-                if (currentPage > 0) {
-                    currentPage--;
-                    renderPage(currentPage);
-                }
-            });
-            nextBtn.addEventListener('click', function () {
-                if (currentPage < totalPages - 1) {
-                    currentPage++;
-                    renderPage(currentPage);
-                }
-            });
-        }
-
-        renderPage(currentPage);
-    })();
-</script>
 </html>
