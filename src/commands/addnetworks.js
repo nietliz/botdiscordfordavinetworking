@@ -99,9 +99,9 @@ module.exports = {
                 EditUser(
                     { dc_username: interaction.user.username },
                     {
-                        instagram: modalInteraction.fields.getTextInputValue(keys.input.instagram),
-                        youtube: modalInteraction.fields.getTextInputValue(keys.input.youtube),
-                        tiktok: modalInteraction.fields.getTextInputValue(keys.input.tiktok),
+                        instagram: modalInteraction.fields.getTextInputValue(keys.input.instagram) || "",
+                        youtube: modalInteraction.fields.getTextInputValue(keys.input.youtube) || "",
+                        tiktok: modalInteraction.fields.getTextInputValue(keys.input.tiktok) || "",
                         ok: true,
                     }
                 ).then(r => {
@@ -137,17 +137,23 @@ async function createPopupOne(interaction) {
     const instagram = new TextInputBuilder()
         .setCustomId(keys.input.instagram)
         .setLabel("Instagram:")
-        .setStyle(TextInputStyle.Short);
+        .setStyle(TextInputStyle.Short)
+        .setValue('')
+        .setRequired(false);
 
     const youtube = new TextInputBuilder()
         .setCustomId(keys.input.youtube)
         .setLabel("Youtube:")
-        .setStyle(TextInputStyle.Short);
+        .setStyle(TextInputStyle.Short)
+        .setValue('')
+        .setRequired(false);
 
     const tiktok = new TextInputBuilder()
         .setCustomId(keys.input.tiktok)
         .setLabel("Tiktok:")
-        .setStyle(TextInputStyle.Short);
+        .setStyle(TextInputStyle.Short)
+        .setValue('')
+        .setRequired(false);
 
 
 
