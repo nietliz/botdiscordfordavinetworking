@@ -99,9 +99,9 @@ module.exports = {
                 EditUser(
                     { dc_username: interaction.user.username },
                     {
-                        instagram: modalInteraction.fields.getTextInputValue(keys.input.instagram) || "",
-                        youtube: modalInteraction.fields.getTextInputValue(keys.input.youtube) || "",
-                        tiktok: modalInteraction.fields.getTextInputValue(keys.input.tiktok) || "",
+                        instagram: modalInteraction.fields.getTextInputValue(keys.input.instagram) || '',
+                        youtube: modalInteraction.fields.getTextInputValue(keys.input.youtube) || '',
+                        tiktok: modalInteraction.fields.getTextInputValue(keys.input.tiktok) || '',
                         ok: true,
                     }
                 ).then(r => {
