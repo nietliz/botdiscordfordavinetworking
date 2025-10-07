@@ -51,7 +51,7 @@
             <% if (user && user.social_networks) { %>
                 <% const sn = user.social_networks; %>
                 <ul>
-                    <% for (var k in sn) { if (sn.hasOwnProperty(k)) { %>
+                    <% for (var k in sn) { if (sn.hasOwnProperty(k) && k !== 'ok') { %>
                         <li><strong><%= k %>:</strong> <%= sn[k] %></li>
                     <% } } %>
                 </ul>
@@ -62,7 +62,7 @@
         <div style="margin-top:16px;">
             <div class="label">Outros dados</div>
             <ul>
-                <% for (var key in user) { if (user.hasOwnProperty(key) && ['_id','dc_username','social_networks'].indexOf(key) === -1) { %>
+                <% for (var key in user) { if (user.hasOwnProperty(key) && ['_id','dc_username','social_networks','ok'].indexOf(key) === -1) { %>
                     <li>
                         <strong><%= key %>:</strong>
                         <% if (typeof user[key] === 'string' || typeof user[key] === 'number' || typeof user[key] === 'boolean') { %>

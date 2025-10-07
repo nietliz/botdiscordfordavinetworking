@@ -11,9 +11,14 @@
         th { background: #f7f7f7; }
         .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
         .topbar h2 { margin: 0; font-size: 22px; }
+        .search-results { margin-bottom: 16px; }
+        .search-info { background: #e3f2fd; color: #1565c0; padding: 12px; border-radius: 4px; margin-bottom: 16px; border: 1px solid #bbdefb; }
+        .no-results { background: #ffebee; color: #c62828; padding: 12px; border-radius: 4px; margin-bottom: 16px; border: 1px solid #ffcdd2; }
         @media (max-width: 600px) {
             .topbar { flex-direction: column; align-items: stretch; }
             .topbar h2 { font-size: 20px; }
+            .topbar > div { flex-direction: column; gap: 8px; }
+            .topbar input { min-width: auto; width: 100%; }
             table { font-size: 14px; }
             th, td { padding: 8px; }
         }
@@ -22,14 +27,34 @@
 <body>
     <div class="topbar">
         <h2>Lista de Usuários</h2>
-        <form method="post" action="/logout">
-            <button type="submit">Sair</button>
-        </form>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <form method="get" action="/users/search" style="display: flex; gap: 8px; align-items: center;">
+                <input type="text" name="q" placeholder="Pesquisar usuários..." style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-width: 200px;" value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>">
+                <button type="submit" style="padding: 6px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="1rem" viewBox="0 -960 960 960" width="1.2rem" fill="#ffffff"><path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/></svg>
+                </button>
+            </form>
+            <!-- <form method="post" action="/logout">
+                <button type="submit">Sair</button>
+            </form> -->
+        </div>
     </div>
     <% if (typeof message !== 'undefined' && message) { %>
         <div style="background: #d4edda; color: #155724; padding: 12px; border-radius: 4px; margin-bottom: 16px; border: 1px solid #c3e6cb;">
             <%= message %>
         </div>
+    <% } %>
+    
+    <% if (typeof isSearch !== 'undefined' && isSearch) { %>
+        <% if (typeof searchResults !== 'undefined' && searchResults && searchResults.length > 0) { %>
+            <div class="search-info">
+                <strong>Resultados da pesquisa para "<%= searchQuery %>":</strong> <%= searchResults.length %> usuário(s) encontrado(s)
+            </div>
+        <% } else { %>
+            <div class="no-results">
+                <strong>Nenhum resultado encontrado para "<%= searchQuery %>"</strong>
+            </div>
+        <% } %>
     <% } %>
     <table>
         <thead>
@@ -40,7 +65,15 @@
             </tr>
         </thead>
         <tbody>
-            <% if (users && users.length) { %>
+            <% if (typeof isSearch !== 'undefined' && isSearch && typeof searchResults !== 'undefined' && searchResults && searchResults.length > 0) { %>
+                <% searchResults.forEach(u => { %>
+                    <tr>
+                        <td><%= u.id %></td>
+                        <td><%= u.dc_username %></td>
+                        <td><a href="/users/<%= u.id %>">Ver detalhes</a></td>
+                    </tr>
+                <% }) %>
+            <% } else if (users && users.length) { %>
                 <% users.forEach(u => { %>
                     <tr>
                         <td><%= u.id %></td>

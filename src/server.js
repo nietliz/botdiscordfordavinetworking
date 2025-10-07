@@ -9,6 +9,15 @@ const { connectDB } = require('./connectiondb');
 const { client } = require('./index');
 const { requestTwoFactor, verifyTwoFactor } = require('./actions/auth');
 const { verifyFrontendAccess } = require('./actions/verifyaccess');
+const { searchUsers } = require('./components/searchusers');
+
+// Rate limiting simples para pesquisa
+const searchRateLimit = new Map();
+const SEARCH_RATE_LIMIT = {
+    maxRequests: 10, // máximo 10 pesquisas
+    windowMs: 60000, // por minuto
+    blockDurationMs: 300000 // bloqueia por 5 minutos se exceder
+};
 
 const app = express();
 
@@ -104,6 +113,62 @@ function ensureTwoFactorVerified(req, res, next) {
 	return res.redirect('/auth');
 }
 
+// Middleware de rate limiting para pesquisa
+function searchRateLimitMiddleware(req, res, next) {
+	const clientIP = req.ip || req.connection.remoteAddress;
+	const now = Date.now();
+	
+	// Limpa entradas antigas
+	for (const [ip, data] of searchRateLimit.entries()) {
+		if (now - data.lastRequest > SEARCH_RATE_LIMIT.windowMs) {
+			searchRateLimit.delete(ip);
+		}
+	}
+	
+	const clientData = searchRateLimit.get(clientIP);
+	
+	if (!clientData) {
+		// Primeira requisição
+		searchRateLimit.set(clientIP, {
+			requestCount: 1,
+			lastRequest: now,
+			blockedUntil: 0
+		});
+		return next();
+	}
+	
+	// Verifica se está bloqueado
+	if (clientData.blockedUntil > now) {
+		console.warn(`🚨 Rate limit excedido para IP: ${clientIP}`);
+		return res.status(429).render('users', { 
+			users: [], 
+			searchResults: [], 
+			searchQuery: req.query.q || '', 
+			isSearch: true, 
+			message: 'Muitas pesquisas. Aguarde alguns minutos antes de tentar novamente.' 
+		});
+	}
+	
+	// Verifica se excedeu o limite
+	if (clientData.requestCount >= SEARCH_RATE_LIMIT.maxRequests) {
+		clientData.blockedUntil = now + SEARCH_RATE_LIMIT.blockDurationMs;
+		console.warn(`🚨 Rate limit excedido para IP: ${clientIP} - Bloqueado por ${SEARCH_RATE_LIMIT.blockDurationMs/1000}s`);
+		return res.status(429).render('users', { 
+			users: [], 
+			searchResults: [], 
+			searchQuery: req.query.q || '', 
+			isSearch: true, 
+			message: 'Muitas pesquisas. Aguarde alguns minutos antes de tentar novamente.' 
+		});
+	}
+	
+	// Incrementa contador
+	clientData.requestCount++;
+	clientData.lastRequest = now;
+	
+	next();
+}
+
 app.get('/users', ensureAuthenticated, ensureTwoFactorVerified, async (req, res) => {
 	try {
 		const db = await connectDB();
@@ -118,6 +183,36 @@ app.get('/users', ensureAuthenticated, ensureTwoFactorVerified, async (req, res)
 		return res.render('users', { users, message });
 	} catch (err) {
 		return res.status(500).send('Erro ao carregar usuários.');
+	}
+});
+
+app.get('/users/search', ensureAuthenticated, ensureTwoFactorVerified, searchRateLimitMiddleware, async (req, res) => {
+	try {
+		const searchQuery = req.query.q || '';
+		
+		if (!searchQuery.trim()) {
+			return res.redirect('/users');
+		}
+
+		const searchResults = await searchUsers(searchQuery);
+		const message = req.query.message || '';
+		
+		return res.render('users', { 
+			users: [], 
+			searchResults, 
+			searchQuery, 
+			isSearch: true, 
+			message 
+		});
+	} catch (err) {
+		console.error('Erro na pesquisa:', err);
+		return res.status(500).render('users', { 
+			users: [], 
+			searchResults: [], 
+			searchQuery: req.query.q || '', 
+			isSearch: true, 
+			message: 'Erro ao realizar pesquisa.' 
+		});
 	}
 });
 
