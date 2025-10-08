@@ -28,6 +28,7 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Parsers
 app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 // Middleware de verificação de acesso (protege contra Postman, curl, etc.)
 app.use(verifyFrontendAccess);
@@ -229,6 +230,67 @@ app.get('/users/:id', ensureAuthenticated, ensureTwoFactorVerified, async (req, 
 	} catch (err) {
 		return res.status(400).send('ID inválido ou erro ao buscar usuário.');
 	}
+});
+
+// Atualização de usuário
+app.post('/users/:id/update', ensureAuthenticated, ensureTwoFactorVerified, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const payload = req.body || {};
+        const db = await connectDB();
+
+        console.log('📝 Dados recebidos para atualização:', JSON.stringify(payload, null, 2));
+
+        // Monta update set incluindo TODOS os dados, mesmo repetidos
+        const updateDoc = {};
+
+        // dc_username sempre atualiza se presente
+        if (payload.dc_username !== undefined) {
+            updateDoc.dc_username = String(payload.dc_username);
+        }
+
+        // social_networks - inclui TODOS os campos, mesmo repetidos
+        if (payload.social_networks && typeof payload.social_networks === 'object') {
+            const socialNetworks = {};
+            for (const [key, value] of Object.entries(payload.social_networks)) {
+                // Inclui TODOS os campos, mesmo 'ok' se presente
+                socialNetworks[key] = String(value ?? '');
+            }
+            updateDoc.social_networks = socialNetworks;
+        }
+
+        // TODOS os outros campos do payload, sem exceções
+        for (const [key, value] of Object.entries(payload)) {
+            // Pula apenas _id (não deve ser alterado)
+            if (key === '_id') continue;
+            
+            // Inclui TODOS os outros campos, independente do tipo
+            if (key !== 'social_networks' && key !== 'dc_username') {
+                updateDoc[key] = value;
+            }
+        }
+
+        console.log('📝 Dados que serão atualizados:', JSON.stringify(updateDoc, null, 2));
+
+        if (Object.keys(updateDoc).length === 0) {
+            return res.status(400).json({ ok: false, error: 'Nada para atualizar' });
+        }
+
+        const result = await db.collection('teste2').updateOne(
+            { _id: new ObjectId(id) },
+            { $set: updateDoc }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ ok: false, error: 'Usuário não encontrado' });
+        }
+
+        console.log('✅ Usuário atualizado com sucesso:', id);
+        return res.json({ ok: true });
+    } catch (err) {
+        console.error('❌ Erro ao atualizar usuário:', err);
+        return res.status(400).json({ ok: false, error: 'Erro ao atualizar usuário' });
+    }
 });
 
 app.post('/users/:id/delete', ensureAuthenticated, ensureTwoFactorVerified, async (req, res) => {

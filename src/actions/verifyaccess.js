@@ -25,8 +25,11 @@ function verifyFrontendAccess(req, res, next) {
     
     // Permite acesso se:
     // 1. A origem está na lista permitida OU
-    // 2. É uma requisição GET para páginas (não API)
-    if (isAllowedOrigin || (req.method === 'GET' && !req.path.startsWith('/api'))) {
+    // 2. É uma requisição GET para páginas (não API) OU
+    // 3. É uma requisição POST para rotas de páginas internas como /users/*/update
+    const isPageRoute = !req.path.startsWith('/api');
+    const isAllowedMethodForPages = req.method === 'GET' || req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE' || req.method === 'PATCH';
+    if (isAllowedOrigin || (isPageRoute && isAllowedMethodForPages)) {
         return next();
     }
     
