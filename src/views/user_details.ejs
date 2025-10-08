@@ -13,6 +13,12 @@
         .btn-secondary { background: #f7f7f7; color: #333; border: 1px solid #ddd; }
         .btn-danger { background: #dc3545; color: white; border: 1px solid #dc3545; }
         .btn-danger:hover { background: #c82333; }
+        .btn-primary { background: #007bff; color: white; border: 1px solid #007bff; }
+        .btn-primary:hover { background: #0056b3; }
+        .btn-success { background: #28a745; color: white; border: 1px solid #28a745; }
+        .btn-success:hover { background: #1e7e34; }
+        .edit-input { width: 100%; padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
+        .edit-input:disabled { background: #f8f9fa; color: #6c757d; }
         .card { border: 1px solid #ddd; border-radius: 6px; padding: 16px; background: #fff; }
         .row { display: flex; gap: 16px; flex-wrap: wrap; }
         .col { flex: 1 1 260px; }
@@ -30,6 +36,9 @@
         <h2>Detalhes do Usuário</h2>
         <div class="actions">
             <a href="/users" class="btn btn-secondary">Voltar</a>
+            <button id="editBtn" class="btn btn-primary" onclick="toggleEdit()">Editar</button>
+            <button id="saveBtn" class="btn btn-success" onclick="saveUser()" style="display: none;">Salvar</button>
+            <button id="cancelBtn" class="btn btn-secondary" onclick="cancelEdit()" style="display: none;">Cancelar</button>
             <form method="post" action="/users/<%= id %>/delete" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')">
                 <button type="submit" class="btn btn-danger">Excluir Usuário</button>
             </form>
@@ -43,30 +52,37 @@
             </div>
             <div class="col">
                 <div class="label">dc_username</div>
-                <div class="value"><%= (user && user.dc_username) ? user.dc_username : '(não informado)' %></div>
+                <div class="value">
+                    <input type="text" id="dc_username" class="edit-input" value="<%= (user && user.dc_username) ? user.dc_username : '' %>" disabled>
+                </div>
             </div>
         </div>
         <div style="margin-top:16px;">
             <div class="label">Redes sociais</div>
-            <% if (user && user.social_networks) { %>
-                <% const sn = user.social_networks; %>
-                <ul>
-                    <% for (var k in sn) { if (sn.hasOwnProperty(k) && k !== 'ok') { %>
-                        <li><strong><%= k %>:</strong> <%= sn[k] %></li>
-                    <% } } %>
-                </ul>
-            <% } else { %>
-                <div class="value">(não informado)</div>
-            <% } %>
+            <div id="socialNetworksContainer">
+                <% if (user && user.social_networks) { %>
+                    <% const sn = user.social_networks; %>
+                    <ul id="socialNetworksList">
+                        <% for (var k in sn) { if (sn.hasOwnProperty(k) && k !== 'ok') { %>
+                            <li class="social-network-item">
+                                <strong><%= k %>:</strong> 
+                                <input type="text" id="social_<%= k %>" class="edit-input" value="<%= sn[k] %>" disabled style="width: 200px; margin-left: 8px;">
+                            </li>
+                        <% } } %>
+                    </ul>
+                <% } else { %>
+                    <div class="value">(não informado)</div>
+                <% } %>
+            </div>
         </div>
         <div style="margin-top:16px;">
             <div class="label">Outros dados</div>
-            <ul>
+            <ul id="otherDataList">
                 <% for (var key in user) { if (user.hasOwnProperty(key) && ['_id','dc_username','social_networks','ok'].indexOf(key) === -1) { %>
-                    <li>
+                    <li class="other-data-item">
                         <strong><%= key %>:</strong>
                         <% if (typeof user[key] === 'string' || typeof user[key] === 'number' || typeof user[key] === 'boolean') { %>
-                            <%= user[key] %>
+                            <input type="text" id="other_<%= key %>" class="edit-input" value="<%= user[key] %>" disabled style="width: 200px; margin-left: 8px;">
                         <% } else { %>
                             <em>(conteúdo estruturado)</em>
                         <% } %>
@@ -75,5 +91,91 @@
             </ul>
         </div>
     </div>
+
+    <script>
+        let isEditing = false;
+        let originalData = {};
+
+        function toggleEdit() {
+            isEditing = !isEditing;
+            const editBtn = document.getElementById('editBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const inputs = document.querySelectorAll('.edit-input');
+
+            if (isEditing) {
+                // Salvar dados originais
+                originalData = {};
+                inputs.forEach(input => {
+                    originalData[input.id] = input.value;
+                    input.disabled = false;
+                });
+
+                editBtn.style.display = 'none';
+                saveBtn.style.display = 'inline-block';
+                cancelBtn.style.display = 'inline-block';
+            } else {
+                // Restaurar dados originais
+                inputs.forEach(input => {
+                    input.value = originalData[input.id] || input.value;
+                    input.disabled = true;
+                });
+
+                editBtn.style.display = 'inline-block';
+                saveBtn.style.display = 'none';
+                cancelBtn.style.display = 'none';
+            }
+        }
+
+        function cancelEdit() {
+            const inputs = document.querySelectorAll('.edit-input');
+            inputs.forEach(input => {
+                input.value = originalData[input.id] || input.value;
+                input.disabled = true;
+            });
+            toggleEdit();
+        }
+
+        async function saveUser() {
+            const inputs = document.querySelectorAll('.edit-input');
+            const updateData = {};
+
+            // Coletar dados dos inputs
+            inputs.forEach(input => {
+                if (input.id.startsWith('social_')) {
+                    const networkName = input.id.replace('social_', '');
+                    if (!updateData.social_networks) updateData.social_networks = {};
+                    updateData.social_networks[networkName] = input.value;
+                } else if (input.id.startsWith('other_')) {
+                    const fieldName = input.id.replace('other_', '');
+                    updateData[fieldName] = input.value;
+                } else if (input.id === 'dc_username') {
+                    updateData.dc_username = input.value;
+                }
+            });
+
+            try {
+                const response = await fetch(`/users/<%= id %>/update`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (response.ok) {
+                    alert('Usuário atualizado com sucesso!');
+                    toggleEdit();
+                    // Recarregar a página para mostrar os dados atualizados
+                    window.location.reload();
+                } else {
+                    alert('Erro ao atualizar usuário. Tente novamente.');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao atualizar usuário. Tente novamente.');
+            }
+        }
+    </script>
 </body>
 </html>
