@@ -56,6 +56,7 @@ function editUserValidation(changes) {
 
 
 
+
 function verify_cpf(cpf) {
     var Soma = 0
     var Resto

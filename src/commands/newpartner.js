@@ -25,9 +25,11 @@ module.exports = {
             const filter = (interaction) => interaction.customId === keys.user;
             interaction.awaitModalSubmit({ filter, time: 30_000 }).then((modalInteraction) => {
                 const cpf = modalInteraction.fields.getTextInputValue(keys.input.cpf)
-                const cpfLimpo = cpf.replace(/[^\d]/g, "");
+                const cpfLimpo = cpf;
+                // const cpfLimpo = cpf.replace(/[^\d]/g, "");
                 const phone = modalInteraction.fields.getTextInputValue(keys.input.phone)
-                const phoneLimpo = phone.replace(/[^\d]/g, "");
+                const phoneLimpo = phone;
+                // const phoneLimpo = phone.replace(/[^\d]/g, "");
                 AddUser(
                     {
                         name: modalInteraction.fields.getTextInputValue(keys.input.name),
