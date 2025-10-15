@@ -23,7 +23,7 @@ module.exports = {
             await interaction.showModal(modal);
             //esperando a interação do usuario para prosseguir
             const filter = (interaction) => interaction.customId === keys.user;
-            interaction.awaitModalSubmit({ filter, time: 30_000 }).then((modalInteraction) => {
+            interaction.awaitModalSubmit({ filter, time: 300_000 }).then((modalInteraction) => {
                 const cpf = modalInteraction.fields.getTextInputValue(keys.input.cpf)
                 const cpfLimpo = cpf;
                 // const cpfLimpo = cpf.replace(/[^\d]/g, "");

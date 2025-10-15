@@ -94,8 +94,7 @@ module.exports = {
 
             //esperando a interação do usuario para prosseguir
             const filter = (interaction) => interaction.customId === keys.user;
-            interaction.awaitModalSubmit({ filter, time: 300_000 }).then((modalInteraction) => {
-                //guardando os dados em variaveis
+            interaction.awaitModalSubmit({ filter, time: 300_000 }).then((modalInteraction) => {                //guardando os dados em variaveis
                 EditUser(
                     { dc_username: interaction.user.username },
                     {
